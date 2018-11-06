@@ -1,0 +1,14 @@
+{
+  "name": "@fadioit/workerify",
+  "version": "0.1.0",
+  "main": "lib/index.js",
+  "license": "MIT",
+  "scripts": {
+    "build": "[ -e lib ] && rm -rf lib; mkdir lib; babel src --out-dir lib"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.1.2",
+    "@babel/core": "^7.1.2",
+    "@babel/preset-env": "^7.1.0"
+  }
+}
