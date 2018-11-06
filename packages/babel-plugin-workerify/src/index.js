@@ -1,6 +1,6 @@
 import { declare } from '@babel/helper-plugin-utils';
 
-const WORKERIFY_MODULE_NAME = '@fadioit/workerify';
+export const WORKERIFY_MODULE_NAME = '@fadioit/workerify';
 
 class WorkerifyTransformer {
   constructor(babel) {
@@ -25,7 +25,7 @@ class WorkerifyTransformer {
   getWorkerFunctionFromPath = path => {
     switch (path.type) {
       case 'FunctionExpression':
-      case 'isArrowFunctionExpression':
+      case 'ArrowFunctionExpression':
         return path;
       case 'Identifier':
         return this.getWorkerFunctionFromIdentifier(path);

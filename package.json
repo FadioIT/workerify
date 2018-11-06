@@ -4,7 +4,8 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "yarn ws:babel build && yarn ws:core build",
+    "build": "yarn ws:babel build && yarn ws:core build && yarn ws:test build",
+    "test": "yarn ws:babel test && yarn ws:core test",
     "ws:core": "yarn workspace @fadioit/workerify",
     "ws:babel": "yarn workspace @fadioit/babel-plugin-workerify"
   }
