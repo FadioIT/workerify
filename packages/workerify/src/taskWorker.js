@@ -1,8 +1,8 @@
 export const createWorkerSource = source => `
   var func = ${source};
   self.onmessage = function (event) {
-    const args = event.data;
-    const result = func(args);
+    var arg = event.data;
+    var result = func(arg);
     if (result && result.then) {
       result.then(
         function (data) {
