@@ -82,7 +82,8 @@ export const createBridge = worker => (value, transferable) => {
   return {
     [Symbol.asyncIterator]: this,
     next: (value, transferable) => enqueueMethod('next', value, transferable),
-    throw: value => enqueueMethod('throw', value, transferable),
-    return: value => enqueueMethod('return', value, transferable),
+    throw: (value, transferable) => enqueueMethod('throw', value, transferable),
+    return: (value, transferable) =>
+      enqueueMethod('return', value, transferable),
   };
 };
