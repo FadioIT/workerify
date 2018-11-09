@@ -53,6 +53,7 @@ export const createBridge = worker => (value, transferable) => {
     queue.forEach(deferred =>
       deferred.resolve({ value: undefined, done: true }),
     );
+    queue.length = 0;
   };
 
   worker.onmessage = event => {
