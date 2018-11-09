@@ -4,6 +4,9 @@
   "repository": "FadioIT/workerify",
   "main": "lib/index.js",
   "license": "MIT",
+  "files": [
+    "lib"
+  ],
   "authors": [
     "Fadio IT",
     "François de Campredon",

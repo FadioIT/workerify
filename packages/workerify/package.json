@@ -9,6 +9,9 @@
     "François de Campredon",
     "François Germain"
   ],
+  "files": [
+    "lib"
+  ],
   "scripts": {
     "build": "[ -e lib ] && rm -rf lib; mkdir lib; babel src --out-dir lib"
   },
