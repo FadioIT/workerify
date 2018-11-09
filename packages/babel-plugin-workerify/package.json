@@ -1,13 +1,17 @@
 {
   "name": "@fadioit/babel-plugin-workerify",
-  "version": "0.1.0",
+  "version": "0.0.1",
+  "repository": "FadioIT/workerify",
   "main": "lib/index.js",
   "license": "MIT",
-  "scripts": {
-    "build": "[ -e lib ] && rm -rf lib; mkdir lib; babel src --out-dir lib"
-  },
+  "authors": [
+    "Fadio IT",
+    "François de Campredon",
+    "François Germain"
+  ],
   "dependencies": {
-    "@babel/helper-plugin-utils": "^7.0.0"
+    "@babel/helper-plugin-utils": "^7.0.0",
+    "regenerator-runtime": "^0.12.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.1.2",

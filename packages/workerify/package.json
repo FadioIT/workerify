@@ -1,8 +1,14 @@
 {
   "name": "@fadioit/workerify",
-  "version": "0.1.0",
+  "version": "0.0.1",
+  "repository": "FadioIT/workerify",
   "main": "lib/index.js",
   "license": "MIT",
+  "authors": [
+    "Fadio IT",
+    "François de Campredon",
+    "François Germain"
+  ],
   "scripts": {
     "build": "[ -e lib ] && rm -rf lib; mkdir lib; babel src --out-dir lib"
   },

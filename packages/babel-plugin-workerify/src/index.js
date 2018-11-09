@@ -1,97 +1,72 @@
+import fs from 'fs';
 import { declare } from '@babel/helper-plugin-utils';
 
 const WORKERIFY_MODULE_NAME = '@fadioit/workerify';
+const REGENERATOR_RUNTIME_SOURCE = fs.readFileSync(
+  require.resolve('regenerator-runtime/runtime'),
+);
 
-class WorkerifyTransformer {
-  constructor(babel) {
-    babel.assertVersion(7);
-    this.babel = babel;
-  }
+export default declare(
+  (api, { insertGeneratorRuntime = true, prependCode = '' } = {}) => {
+    api.assertVersion(7);
 
-  options = {};
+    prependCode = insertGeneratorRuntime
+      ? `${prependCode}\n${REGENERATOR_RUNTIME_SOURCE}`
+      : prependCode;
 
-  visitor = {
-    CallExpression: path => {
-      if (path.get('callee').referencesImport(WORKERIFY_MODULE_NAME)) {
-        this.transformWorkerifyCallExpression(path);
+    let babelOptions = {};
+
+    const transformWorkerifyCallExpression = expression => {
+      const callback = expression.get('arguments.0');
+
+      if (!callback) {
+        throw new Error(
+          'workerify expect first argument to be a function or a string representing a function',
+        );
       }
-    },
-  };
 
-  manipulateOptions = options => {
-    this.options = options;
-  };
+      let code;
 
-  getWorkerFunctionFromPath = path => {
-    switch (path.type) {
-      case 'FunctionExpression':
-      case 'isArrowFunctionExpression':
-        return path;
-      case 'Identifier':
-        return this.getWorkerFunctionFromIdentifier(path);
-      case 'CallExpression':
-        return this.getWorkerFunctionFromCallExpression(path);
-      case 'VariableDeclarator':
-        return this.getWorkerFunctionFromVariableDeclarator(path);
-      case 'StringLiteral':
-      case 'TemplateLiteral':
-        return path;
-      default:
-        return;
-    }
-  };
+      if (callback.isStringLiteral() || callback.isTemplateLiteral()) {
+        ({ code } = transformWorkerFunctionString(callback));
+      } else if (
+        callback.isArrowFunctionExpression() ||
+        callback.isFunctionExpression()
+      ) {
+        ({ code } = transformWorkerFunctionExpression(callback));
+      } else {
+        throw new Error(
+          'Workerify expect a function expression as first parameter ' +
+            `given ${callback.type}`,
+        );
+      }
 
-  getWorkerFunctionFromIdentifier = identifier => {
-    return this.getWorkerFunctionFromPath(
-      identifier.scope.getBinding(identifier.node.name).path,
-    );
-  };
+      const isIterator = callback.node.generator;
 
-  getWorkerFunctionFromVariableDeclarator = declarator => {
-    return this.getWorkerFunctionFromPath(declarator.get('init'));
-  };
+      expression.node.arguments = [
+        api.types.stringLiteral(code),
+        api.types.booleanLiteral(isIterator),
+        api.types.stringLiteral(prependCode),
+      ];
+    };
 
-  getWorkerFunctionFromCallExpression = expression => {
-    return expression.get('arguments.0');
-  };
+    const transformWorkerFunctionExpression = expression =>
+      transformWorkerFunctionString(expression.getSource());
 
-  transformWorkerifyCallExpression = expression => {
-    const callback = this.getWorkerFunctionFromPath(
-      expression.get('arguments.0'),
-    );
+    const transformWorkerFunctionString = string =>
+      api.transformSync(`(${string})`, babelOptions);
 
-    if (!callback) {
-      throw new Error(
-        'workerify expect first argument to be a function or a string representing a function',
-      );
-    }
-
-    const isIterator = expression.get('arguments.1');
-    let code;
-
-    if (callback.isStringLiteral() || callback.isTemplateLiteral()) {
-      ({ code } = this.transformWorkerFunctionString(callback));
-    } else {
-      ({ code } = this.transformWorkerFunctionExpression(callback));
-    }
-
-    expression.node.arguments = [
-      this.babel.types.stringLiteral(code),
-      isIterator && isIterator.isBooleanLiteral()
-        ? isIterator.node
-        : this.babel.types.booleanLiteral(callback.node.generator || false),
-    ];
-  };
-
-  transformWorkerFunctionExpression = expression =>
-    this.transformWorkerFunctionString(expression.getSource());
-
-  transformWorkerFunctionString = string =>
-    this.babel.transformSync(`(${string})`, this.options);
-}
-
-export default declare(babel => {
-  const { visitor, manipulateOptions } = new WorkerifyTransformer(babel);
-
-  return { visitor, manipulateOptions };
-});
+    return {
+      visitor: {
+        CallExpression: path => {
+          if (path.get('callee').referencesImport(WORKERIFY_MODULE_NAME)) {
+            transformWorkerifyCallExpression(path);
+          }
+        },
+      },
+      manipulateOptions(options) {
+        babelOptions = options;
+      },
+    };
+  },
+);
